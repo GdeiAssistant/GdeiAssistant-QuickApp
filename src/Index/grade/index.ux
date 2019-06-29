@@ -1,0 +1,175 @@
+<template>
+	<div>
+		<tabs class="tabs" onchange="changeTabactive">
+			<tab-bar class="tab-bar">
+				<block for="list">
+					<div class="tab-item">
+						<text style="color: {{$item.color}}">{{$item.title}}</text>
+						<div if="{{$item.show_line}}" class="line" style="background-color: {{color_active}}"></div>
+					</div>
+				</block>
+			</tab-bar>
+
+			<tab-content class="tab-content">
+				<list>
+					<list-item class="grade-list" type="listItem" for="{{firstTermGradeList}}">
+						<text class="first_term" show="{{$idx==0}}">第一学期</text>
+						<div class="grade-list-item">
+							<div id="{{$idx}}" class="grade-content" onclick="showFirstTermGradeDetail">
+								<text class="grade-name">{{$item.gradeName}}</text>
+								<text class="grade-score">{{$item.gradeScore}}</text>
+							</div>
+						</div>
+					</list-item>
+					<list-item class="grade-list" type="listItem" for="{{secondTermGradeList}}">
+						<text class="second_term" show="{{$idx==0}}">第二学期</text>
+						<div class="grade-list-item">
+							<div id="{{$idx}}" class="grade-content" onclick="showSecondTermGradeDetail">
+								<text class="grade-name">{{$item.gradeName}}</text>
+								<text class="grade-score">{{$item.gradeScore}}</text>
+							</div>
+						</div>
+					</list-item>
+				</list>
+			</tab-content>
+		</tabs>
+	</div>
+</template>
+
+<script>
+	export default {
+		private: {
+			color_normal: '#1A1A1A',
+			color_active: '#00fa9a',
+			list: [
+				{ title: '大一', show_line: false, color: '#1A1A1A' },
+				{ title: '大二', show_line: false, color: '#1A1A1A' },
+				{ title: '大三', show_line: false, color: '#1A1A1A' },
+				{ title: '大四', show_line: false, color: '#1A1A1A' }
+			]
+		},
+		protected: {
+			firstTermGradeList: null,
+			secondTermGradeList: null,
+			activeIndex: 0
+		},
+		async getDataList() {
+			if (this.$app.$def.validateRequestAccess()) {
+				let token = await this.$app.$def.getStorage('accessToken')
+				token = JSON.parse(token)
+				let data = await this.$app.$def.request({
+					url: 'https://www.gdeiassistant.cn/rest/gradequery',
+					method: 'POST',
+					header: {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					data: {
+						year: this.activeIndex,
+						token: token.signature
+					}
+				})
+				if (data) {
+					this.firstTermGradeList = data.firstTermGradeList
+					this.secondTermGradeList = data.secondTermGradeList
+				}
+			}
+		},
+		onReady() {
+			this.getDataList()
+		},
+		showFirstTermGradeDetail(e) {
+			let grade = this.firstTermGradeList[e.currentTarget.id]
+			this.$app.$def.showModal(grade.gradeName, '学年：' + grade.gradeYear + '\n学期：' + grade.gradeTerm + '\n代码：' + grade.gradeId + '\n学分：' + grade.gradeCredit + '\n性质：' + grade.gradeType + '\n绩点：' + grade.gradeGpa + '\n成绩：' + grade.gradeScore + '分')
+		},
+		showSecondTermGradeDetail(e) {
+			let grade = this.secondTermGradeList[e.currentTarget.id]
+			this.$app.$def.showModal(grade.gradeName, '学年：' + grade.gradeYear + '\n学期：' + grade.gradeTerm + '\n代码：' + grade.gradeId + '\n学分：' + grade.gradeCredit + '\n性质：' + grade.gradeType + '\n绩点：' + grade.gradeGpa + '\n成绩：' + grade.gradeScore + '分')
+		},
+		changeTabactive: function (e) {
+			for (let i = 0; i < this.list.length; i++) {
+				let element = this.list[i];
+				element.show_line = false;
+				element.color = this.color_normal;
+				if (i === e.index) {
+					element.show_line = true;
+					element.color = this.color_active;
+				}
+			}
+			this.activeIndex = e.index
+			this.getDataList()
+		}
+	}
+</script>
+
+<style>
+	.tab-bar {
+		margin-left: 50px;
+		margin-top: 20px;
+    margin-right: 50px;
+    height: 100px;
+  }
+
+  .tab-item {
+    flex-direction: column;
+		align-items: center;
+		margin-left: 20px;
+		margin-right: 20px;
+  }
+
+  .tab-item text {
+    opacity: 0.5;
+    margin-bottom: 12px;
+    font-size: 25px;
+  }
+
+  .tab-item text:active {
+    font-size: 25px;
+    margin-bottom: 8px;
+	}
+
+  .line {
+    width: 100px;
+    height: 4px;
+	}
+
+	.grade-list{
+		flex-direction: column;
+	}
+
+	.first_term{
+		padding-top: 25px;
+		text-align: center;
+	}
+	
+	.second_term{
+		padding-top: 35px;
+		text-align: center;
+	}
+
+	.grade-list-item{
+		padding: 0 33px;
+		flex-direction: column;
+	}
+
+  .grade-content {
+    border-color: #cccccc;
+    border-bottom-width: 0.5px;
+    align-items: center;
+    width: 700px;
+  }
+
+  .grade-name {
+    padding-top: 29px;
+    padding-bottom: 29px;
+    color: #1a1a1a;
+    font-size: 31px;
+		flex: 1;
+		lines: 1;
+		text-overflow: ellipsis;
+  }
+
+  .grade-score {
+    color: #8d8d8d;
+    font-size: 27px;
+  }
+</style>

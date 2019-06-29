@@ -1,0 +1,212 @@
+<template>
+  <div class="login-page">
+    <block if="{{login}}">
+      <!-- 应用图标 -->
+      <image id="icon" src="../Common/logo_large.png"></image>
+
+      <!-- 应用名 -->
+      <text id="name">易小助</text>
+
+      <!-- 登录信息输入框 -->
+      <div class="form form-first">
+        <text class="form-label">用户名</text>
+        <input class="form-input" disabled="{{loading}}" maxlength="25" onchange="updateUsernameValue">{{username}}</input>
+      </div>
+      <div class="form">
+        <text class="form-label">密码</text>
+        <input class="form-input" disabled="{{loading}}" maxlength="30" onchange="updatePasswordValue" type="password">{{password}}</input>
+      </div>
+
+      <!-- 登录按钮 -->
+      <input class="btn" disabled="{{loading}}" type="button" onclick="userLogin" value="登录" />
+
+      <!-- 版权信息 -->
+      <text id="footer">Copyright © 2016 - 2019 GdeiAssistant</text>
+    </block>
+  </div>
+</template>
+
+<script>
+
+  export default {
+    protected: {
+      login: false,
+      loading: false,
+      unionid: null,
+      username: null,
+      password: null
+    },
+    onMenuPress() {
+			this.$app.$def.showMenu()
+		},
+    async onReady() {
+      this.loadLoginData()
+    },
+    async loadLoginData() {
+      let accessToken = await this.$app.$def.getStorage('accessToken')
+      let refreshToken = await this.$app.$def.getStorage('refreshToken')
+      if (accessToken && refreshToken) {
+        accessToken = JSON.parse(accessToken)
+        refreshToken = JSON.parse(refreshToken)
+        //校验时间戳
+        if (this.$app.$def.validateTokenTimestamp(accessToken.expireTime)) {
+          //权限令牌有效，进入功能主页
+          this.$app.$def.replaceTo({
+            url: 'Index'
+          })
+        }
+        else {
+          if (this.$app.$def.validateTokenTimestamp(refreshToken.expireTime)) {
+            //使用刷新令牌刷新令牌信息
+            let data = this.$app.$def.request({
+              url: 'https://www.gdeiassistant.cn/rest/token/refresh',
+              method: 'POST',
+              data: {
+                token: refreshToken.signature
+              }
+            })
+            if (data) {
+              this.$app.$def.setStorage('accessToken', data.accessToken)
+              this.$app.$def.setStorage('refreshToken', data.refreshToken)
+              this.$app.$def.replaceTo({
+                url: 'Index'
+              })
+            }
+            else {
+              this.login = true
+            }
+          }
+          else {
+            this.login = true
+          }
+        }
+      }
+      else {
+        //获取用户唯一标识符
+        let uuid = this.$app.$def.uuid()
+        this.unionid = uuid
+        this.login = true
+      }
+    },
+    updateUsernameValue(e) {
+      this.username = e.value
+    },
+    updatePasswordValue(e) {
+      this.password = e.value
+    },
+    async userLogin() {
+      let unionid = this.unionid
+      let username = this.username
+      let password = this.password
+      if (username && password) {
+        //生成时间戳和随机值
+        let nonce = Math.random().toString(36).substr(2, 15)
+        let timestamp = new Date().getTime()
+        //进行摘要签名
+        let signature = this.$app.$def.sha1Hex(timestamp + nonce
+          + this.$app.$data.requestValidateToken)
+        this.loading = true
+        let data = await this.$app.$def.request({
+          url: 'https://www.gdeiassistant.cn/rest/userlogin',
+          method: 'POST',
+          data: {
+            unionid: unionid,
+            username: username,
+            password: password,
+            nonce: nonce,
+            timestamp: timestamp,
+            signature: signature
+          }
+        })
+        if (data) {
+          let username = data.user.username
+          let accessToken = data.accessToken
+          let refreshToken = data.refreshToken
+          this.$app.$def.setStorage('username', username)
+          this.$app.$def.setStorage('accessToken', accessToken)
+          this.$app.$def.setStorage('refreshToken', refreshToken)
+          this.$app.$def.replaceTo({
+            url: 'Index'
+          })
+        }
+        else {
+          this.loading = false
+        }
+      }
+      else {
+        this.$app.$def.showModal('请填写教务系统信息', '教务系统账号和密码不能为空')
+      }
+    }
+  }
+
+</script>
+
+<style>
+	.login-page {
+		flex-direction: column;
+		align-items: center;
+	}
+
+	/* 应用图标 */
+	#icon {
+		margin-top: 90px;
+		width: 250px;
+		height: 250px;
+		border-radius: 10px;
+	}
+
+	/* 应用名 */
+	#name {
+		margin-top: 50px;
+		font-size: 36px;
+		color: #000000;
+	}
+
+	/* 应用详情 */
+	.form {
+		width: 650px;
+		height: 90px;
+		border-bottom-width: 1px;
+		border-bottom-color: #f0f0f0;
+	}
+
+	.form-first {
+		margin-top: 65px;
+		border-top-width: 1px;
+		border-top-color: #f0f0f0;
+	}
+
+	.form-label {
+		width: 160px;
+		padding-left: 10px;
+		font-size: 30px;
+		color: #000000;
+	}
+
+	.form-input {
+		width: 490px;
+		font-size: 30px;
+		color: #8d8d8d;
+	}
+
+	/* 按钮 */
+	.btn {
+		width: 550px;
+		height: 86px;
+		margin-top: 75px;
+		border-radius: 43px;
+		background-color: #09ba07;
+		font-size: 30px;
+		color: #ffffff;
+	}
+
+	/* 底部版权信息 */
+	#footer {
+		width: 750px;
+		position: fixed;
+		bottom: 55px;
+		font-size: 25px;
+		color: #8d8d8d;
+		text-align: center;
+	}
+</style>

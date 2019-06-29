@@ -1,0 +1,126 @@
+<import name="personal_page" src="./personal/index.ux"></import>
+<import name="grade_page" src="./grade/index.ux"></import>
+<import name="schedule_page" src="./schedule/index.ux"></import>
+<template>
+	<div class="container">
+		<block for="data.list">
+			<div show="{{$item.show}}" class="tab-content">
+				<div show="{{data.list[0].show}}">
+					<personal_page></personal_page>
+				</div>
+				<div show="{{data.list[1].show}}">
+					<grade_page></grade_page>
+				</div>
+				<div show="{{data.list[2].show}}">
+					<schedule_page></schedule_page>
+				</div>
+			</div>
+		</block>
+		<tabs onchange="switchContent" class="tabs">
+			<tab-bar>
+				<block for="data.list">
+					<div class="tab-item">
+						<image if="{{$item.show}}" class="image-active" src="{{$item.show?$item.pic_choice:$item.pic}}" />
+						<image else class="image-normal" src="{{$item.show?$item.pic_choice:$item.pic}}" />
+						<text class="title">{{$item.title}}</text>
+					</div>
+				</block>
+			</tab-bar>
+		</tabs>
+	</div>
+</template>
+
+<style>
+	.container {
+		align-items: center;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.tabs {
+		background-color: #f5f5f5;
+		height: 100px;
+		width: 100%;
+		position: fixed;
+		bottom: 0px;
+	}
+
+	.tab-item {
+		flex-direction: column;
+		align-items: center;
+		margin-left: 33px;
+		margin-right: 33px;
+		padding-top: 14px;
+		padding-bottom: 11px;
+		width: 170.8px;
+		height: 104.2px;
+	}
+
+	.image-active {
+		width: 50px;
+		height: 50px;
+		resize-mode: contain;
+	}
+
+	.image-normal {
+		width: 50px;
+		height: 50px;
+		resize-mode: contain;
+		opacity: 0.5;
+	}
+
+	.tab-item text {
+		font-size: 21px;
+		margin-top: 6px;
+		text-align: center;
+		color: rgba(0, 0, 0, 0.5);
+	}
+
+	.tab-item text:active {
+		font-size: 21px;
+		color: #00fa9a;
+		margin-top: 6px;
+		text-align: center;
+	}
+
+	.tab-content {
+		height: 100%;
+		width: 100%;
+		align-content: center;
+		justify-content: center;
+	}
+
+	.tab-content text {
+		width: 100%;
+		text-align: center;
+	}
+</style>
+
+<script>
+	module.exports = {
+		data: {
+			isFixedMainTab: true,
+			data: {
+				list: [
+					{ i: 0, pic: '../Common/home_normal.png', pic_choice: '../Common/home_checked.png', show: false, title: '个人中心' },
+					{ i: 1, pic: '../Common/grade_normal.png', pic_choice: '../Common/grade_checked.png', show: false, title: '成绩查询' },
+					{ i: 2, pic: '../Common/schedule_normal.png', pic_choice: '../Common/schedule_checked.png', show: false, title: '课表查询' },
+				]
+			}
+		},
+		onMenuPress() {
+			this.$app.$def.showMenu()
+		},
+		switchContent(e) {
+			let index = e.index;
+			for (let i = 0; i < this.data.list.length; i++) {
+				let element = this.data.list[i];
+				element.show = false;
+				if (i === index) {
+					element.show = true;
+					this.$page.setTitleBar({ text: element.title });
+				}
+			}
+		}
+	}
+</script>

@@ -1,0 +1,6 @@
+.ide
+.fastapp
+build
+dist
+node_modules
+sign

@@ -1,0 +1,173 @@
+<template>
+	<div>
+		<tabs class="tabs" onchange="changeTabactive">
+			<tab-bar class="tab-bar">
+				<block for="list">
+					<div class="tab-item">
+						<text style="color: {{$item.color}}">{{$item.title}}</text>
+						<div if="{{$item.show_line}}" class="line" style="background-color: {{color_active}}"></div>
+					</div>
+				</block>
+			</tab-bar>
+
+			<tab-content class="tab-content">
+				<list>
+					<list-item type="listItem" for="scheduleList">
+						<div class="schedule" id="{{$idx}}" onclick="showScheduleDetail" show="{{$item.column==activeIndex}}">
+							<div class="schedule_left">
+								<text class="schedule_base">[ {{calculateStartLesson($item.row)}} - {{calculateEndLesson($item.row,$item.scheduleLength)}} ] {{$item.scheduleName}}</text>
+								<text class="schedule_detail">第{{$item.minScheduleWeek}}周至第{{$item.maxScheduleWeek}}周</text>
+								<text class="schedule_detail">{{$item.scheduleTeacher}}</text>
+							</div>
+							<div class="schedule_right">
+								<text class="schedule_detail schedule_detail_right">{{$item.scheduleLocation}}</text>
+							</div>
+						</div>
+					</list-item>
+				</list>
+			</tab-content>
+		</tabs>
+	</div>
+</template>
+
+<script>
+	export default {
+		private: {
+			color_normal: '#1A1A1A',
+			color_active: '#00fa9a',
+			list: [
+				{ title: '周一', show_line: false, color: '#1A1A1A' },
+				{ title: '周二', show_line: false, color: '#1A1A1A' },
+				{ title: '周三', show_line: false, color: '#1A1A1A' },
+				{ title: '周四', show_line: false, color: '#1A1A1A' },
+				{ title: '周五', show_line: false, color: '#1A1A1A' },
+				{ title: '周六', show_line: false, color: '#1A1A1A' },
+				{ title: '周日', show_line: false, color: '#1A1A1A' },
+			]
+		},
+		protected: {
+			scheduleList: null,
+			activeIndex: 0
+		},
+		async onInit() {
+			this.getDataList()
+		},
+		calculateStartLesson(row) {
+			return row + 1;
+		},
+		calculateEndLesson(row, length) {
+			return row + length;
+		},
+		showScheduleDetail(e) {
+			let schedule = this.scheduleList[e.currentTarget.id]
+			this.$app.$def.showModal(schedule.scheduleName, '课程类型：' + schedule.scheduleType + '\n上课节数：' + schedule.scheduleLesson + '\n课程长度：' + schedule.scheduleLength + '节' + '\n任课教师：' + schedule.scheduleTeacher + '\n上课地点：' + schedule.scheduleLocation + '\n上课周数：' + '第' + schedule.minScheduleWeek + '周至第' + schedule.maxScheduleWeek + '周')
+		},
+		async getDataList() {
+			if (this.$app.$def.validateRequestAccess()) {
+				let token = await this.$app.$def.getStorage('accessToken')
+				token = JSON.parse(token)
+				let data = await this.$app.$def.request({
+					url: 'https://www.gdeiassistant.cn/rest/schedulequery',
+					method: 'POST',
+					header: {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					data: {
+						token: token.signature
+					}
+				})
+				if (data) {
+					this.scheduleList = data.scheduleList
+				}
+			}
+		},
+		changeTabactive: function (e) {
+			for (let i = 0; i < this.list.length; i++) {
+				let element = this.list[i];
+				element.show_line = false;
+				element.color = this.color_normal;
+				if (i === e.index) {
+					element.show_line = true;
+					element.color = this.color_active;
+				}
+			}
+			this.activeIndex = e.index
+		}
+	}
+</script>
+
+<style>
+  .tab-bar {
+		margin-left: 50px;
+		margin-top: 20px;
+    margin-right: 50px;
+    height: 100px;
+  }
+
+  .tab-item {
+    flex-direction: column;
+		align-items: center;
+		margin-left: 20px;
+		margin-right: 20px;
+  }
+
+  .tab-item text {
+    opacity: 0.5;
+    margin-bottom: 12px;
+    font-size: 25px;
+  }
+
+  .tab-item text:active {
+    font-size: 25px;
+    margin-bottom: 8px;
+  }
+
+  .line {
+    width: 100px;
+    height: 4px;
+	}
+	
+	.schedule {
+		lines: 1;
+		text-overflow: ellipsis;
+		padding: 5px 33px;
+		width: 100%;
+		flex-direction: row;
+		justify-content: space-between;
+    border-color: #cccccc;
+    border-bottom-width: 0.5px;
+	}
+	
+	.schedule_left{
+		padding-left: 5px;
+		padding-right: 5px;
+		flex-direction: column;
+		width: 500px;
+	}
+
+	.schedule_right{
+		padding-left: 5px;
+		padding-right: 5px;
+		width: 200px;
+	}
+
+	.schedule_base{
+		padding-top: 10px;
+		padding-bottom: 10px;
+    color: #1a1a1a;
+    font-size: 31px;
+		flex: 1;
+	}
+
+	.schedule_detail{
+		flex:1;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		color: #8d8d8d;
+		font-size: 27px;
+	}
+
+	.schedule_detail_right{
+		text-align: right;
+	}
+</style>
