@@ -8,7 +8,7 @@
 
 <script>
 	export default {
-		protected: {
+		data: {
 			kickname: '易小助用户',
 			avatar: '../Common/default_avatar.png'
 		},
