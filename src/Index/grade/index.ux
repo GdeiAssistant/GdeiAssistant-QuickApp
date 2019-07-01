@@ -38,7 +38,7 @@
 
 <script>
 	export default {
-		private: {
+		data: {
 			color_normal: '#1A1A1A',
 			color_active: '#00fa9a',
 			list: [
@@ -46,10 +46,8 @@
 				{ title: '大二', show_line: false, color: '#1A1A1A' },
 				{ title: '大三', show_line: false, color: '#1A1A1A' },
 				{ title: '大四', show_line: false, color: '#1A1A1A' }
-			]
-		},
-		protected: {
-			firstTermGradeList: null,
+      ],
+      firstTermGradeList: null,
 			secondTermGradeList: null,
 			activeIndex: 0
 		},
@@ -78,11 +76,11 @@
 			this.getDataList()
 		},
 		showFirstTermGradeDetail(e) {
-			let grade = this.firstTermGradeList[e.currentTarget.id]
+			let grade = this.firstTermGradeList[e.target.id]
 			this.$app.$def.showModal(grade.gradeName, '学年：' + grade.gradeYear + '\n学期：' + grade.gradeTerm + '\n代码：' + grade.gradeId + '\n学分：' + grade.gradeCredit + '\n性质：' + grade.gradeType + '\n绩点：' + grade.gradeGpa + '\n成绩：' + grade.gradeScore + '分')
 		},
 		showSecondTermGradeDetail(e) {
-			let grade = this.secondTermGradeList[e.currentTarget.id]
+			let grade = this.secondTermGradeList[e.target.id]
 			this.$app.$def.showModal(grade.gradeName, '学年：' + grade.gradeYear + '\n学期：' + grade.gradeTerm + '\n代码：' + grade.gradeId + '\n学分：' + grade.gradeCredit + '\n性质：' + grade.gradeType + '\n绩点：' + grade.gradeGpa + '\n成绩：' + grade.gradeScore + '分')
 		},
 		changeTabactive: function (e) {

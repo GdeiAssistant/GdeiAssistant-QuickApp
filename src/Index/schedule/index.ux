@@ -32,7 +32,7 @@
 
 <script>
 	export default {
-		private: {
+		data: {
 			color_normal: '#1A1A1A',
 			color_active: '#00fa9a',
 			list: [
@@ -43,23 +43,21 @@
 				{ title: '周五', show_line: false, color: '#1A1A1A' },
 				{ title: '周六', show_line: false, color: '#1A1A1A' },
 				{ title: '周日', show_line: false, color: '#1A1A1A' },
-			]
-		},
-		protected: {
-			scheduleList: null,
+      ],
+      scheduleList: null,
 			activeIndex: 0
 		},
 		async onInit() {
 			this.getDataList()
 		},
 		calculateStartLesson(row) {
-			return row + 1;
+			return row + 1
 		},
 		calculateEndLesson(row, length) {
-			return row + length;
+			return row + length
 		},
 		showScheduleDetail(e) {
-			let schedule = this.scheduleList[e.currentTarget.id]
+			let schedule = this.scheduleList[e.target.id]
 			this.$app.$def.showModal(schedule.scheduleName, '课程类型：' + schedule.scheduleType + '\n上课节数：' + schedule.scheduleLesson + '\n课程长度：' + schedule.scheduleLength + '节' + '\n任课教师：' + schedule.scheduleTeacher + '\n上课地点：' + schedule.scheduleLocation + '\n上课周数：' + '第' + schedule.minScheduleWeek + '周至第' + schedule.maxScheduleWeek + '周')
 		},
 		async getDataList() {
