@@ -1,7 +1,7 @@
 <template>
 	<div class="profile">
 		<image id="avatar" src="{{avatar}}"></image>
-		<text id="username">{{kickname}}</text>
+		<text id="username">{{nickname}}</text>
 		<input class="btn" type="button" onclick="logout" value="退出登录" />
 	</div>
 </template>
@@ -9,7 +9,7 @@
 <script>
 	export default {
 		data: {
-			kickname: '易小助用户',
+			nickname: '易小助用户',
 			avatar: '../Common/default_avatar.png'
 		},
 		async onReady() {
@@ -39,8 +39,8 @@
 						token: token.signature
 					},
 				})
-				if (data && data.kickname) {
-					this.kickname = data.kickname
+				if (data && data.nickname) {
+					this.nickname = data.nickname
 				}
 			}
 		},
