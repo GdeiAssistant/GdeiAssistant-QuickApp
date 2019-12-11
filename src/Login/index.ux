@@ -21,7 +21,7 @@
       <input class="btn" disabled="{{loading}}" type="button" onclick="userLogin" value="登录" />
 
       <!-- 版权信息 -->
-      <text id="footer">Copyright © 2016 - 2019 GdeiAssistant</text>
+      <text id="footer">Copyright © 2016 - 2020 GdeiAssistant</text>
     </block>
   </div>
 </template>
